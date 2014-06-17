@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/back.bmp</file>
+        <file>images/icon.jpg</file>
+        <file>images/O.bmp</file>
+        <file>images/X.bmp</file>
+        <file>images/red/Kre.png</file>
+        <file>images/red/No.png</file>
+        <file>images/red/pole.png</file>
+    </qresource>
+</RCC>
