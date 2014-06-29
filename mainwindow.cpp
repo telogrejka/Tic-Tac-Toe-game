@@ -14,22 +14,32 @@ Game game;
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // review notes: Зачем нужна данная строка? Какова ее цель? Можно-ли ее убрать?
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(repaint()));
     connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setScin(int)));
+
+    // review notes: А где лучше всего выполнит эти 3 строки инициализауии объекта класса game?
     game.Xwins = 0, game.Owins = 0;
     game.start = false;
     game.Reset(QPixmap(":/images/images/X.bmp"), QPixmap(":/images/images/O.bmp"));
+
+    // review notes: А где лучше всего выполнит эти строки инициализауии объекта класса Ui::MainWindow?
     ui->comboBox->addItem("Default");
     ui->comboBox->addItem("Red");
 }
 
 MainWindow::~MainWindow()
 {
+    // review notes: А как лучше владеть и удалять объект ui?
     delete ui;
 }
 
 void MainWindow::readRecord()
 {
+    // review notes: Роман, представте, что вы закачик или руководитель проекта.
+    // review notes: Вы бы в такой ситуации были рады получить программу с неработующим функционалом и кучей задукоментированного кода?
+
     //  Чтение рекодров из XML-файла
 
 //    QXmlStreamReader xmlReader;
@@ -99,14 +109,16 @@ void MainWindow::on_pushButton_clicked()
         ui->welcomeLabel->hide();
         resetScin();
         game.start = true;
+
+        // review notes: Где лучше всего провести инициализацию объекта ui?
         ui->newGameButton->setEnabled(true);
         ui->turnLabel->setEnabled(true);
         //readRecord();
         if(ui->rb2Players->isChecked())
-            mode = 0;
+            mode = 0;   // review notes: Что означает 0? Какой он смысл несет? Вам знакомо, что такое именнованная константа?
         if(ui->rbComp->isChecked())
         {
-            mode = 1;
+            mode = 1;   // review notes: Что означает 1? Какой он смысл несет? Вам знакомо, что такое именнованная константа?
             ui->turnLabel->setText(" ");
         }
     }
@@ -124,6 +136,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
     {
         painter.drawPixmap(game.coords.at(i), game.all.at(i));
     }
+
+    // review notes: Что означают магические числа 382, 384, 0, 9? Вам знакомо, что такое именнованная константа?
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -170,6 +184,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
                 while(check)
                 {
+                    // review note: а как бы сделать не случайный процесс игры компьютера?
                     int rx = qrand() % 3;
                     int ry = qrand() % 3;
                     if (game.grid[rx][ry] == 0)
@@ -180,6 +195,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 }
             }
             // Рисуем крестики и нолики
+            // review notes: Не могли бы вы проще переписать проще данный цикл?
             int k = 0;
             for(int i = 0; i < 3; i++)
             {
@@ -211,6 +227,7 @@ void MainWindow::GameOverHandle(int over)
     switch(over)
     {
         case 0:
+            // review notes: Как правильно работать состроками? Корректно ли их так просто упоминать в тексте программы?
             message = "Ничья! Желаете сыграть еще раз?";
             break;
         case 1:
@@ -322,6 +339,7 @@ void MainWindow::on_aboutButton_clicked()
 }
 void MainWindow::resetScin()
 {
+    // alex.ter: Вам не кажется, что у этого метод и метода MainWindow::setScin(int index) много общего?
     switch(ui->comboBox->currentIndex())
     {
         case(0):
@@ -351,11 +369,16 @@ void MainWindow::setScin(int index)
     {
         switch(index)
         {
+            // review notes: Что означает 0? Какой он смысл несет? Вам знакомо, что такое именнованная константа?
             case(0):
+                // review notes: Что означает 122? Какой смысл несет это число?
                 setScinParam(122, ":/images/images/back.bmp");
+                // review notes: Хорошо ли так просто укаывать имена путей?
                 game.LoadingImage(QPixmap(":/images/images/X.bmp"), QPixmap(":/images/images/O.bmp"));
                 break;
+            // review notes: Что означает 1? Какой смысл несет это число?
             case(1):
+                // review notes: Что означает 100? Какой смысл несет это число?
                 setScinParam(100, ":/images/images/red/pole.png");
                 game.LoadingImage(QPixmap(":/images/images/red/Kre.png"), QPixmap(":/images/images/red/No.png"));
                 break;
