@@ -1,24 +1,16 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "xml.h"
 #include "game.h"
 
 using namespace std;
 
 QFile txtRecords("c://records.txt");
-QFile file("c://records.xml");
-QDomDocument doc("records");
-QDomElement  domElement = doc.createElement("records");
 Game game;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(repaint()));
-    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setScin(int)));
-    game.Xwins = 0, game.Owins = 0;
-    game.start = false;
-    game.Reset(QPixmap(":/images/images/X.bmp"), QPixmap(":/images/images/O.bmp"));
+    game.Reset(QPixmap(DEFAULT_X_PIC), QPixmap(DEFAULT_O_PIC));
     ui->comboBox->addItem("Default");
     ui->comboBox->addItem("Red");
 }
@@ -26,63 +18,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-void MainWindow::readRecord()
-{
-    //  Чтение рекодров из XML-файла
-
-//    QXmlStreamReader xmlReader;
-//    if(file.open(QIODevice::ReadOnly))
-//    {
-//        QString s(file.readAll());
-//        xmlReader.addData(s);
-//        while(!xmlReader.atEnd())
-//        {
-//            if(xmlReader.isStartElement())
-//            {
-//                QStringList sl;
-//                sl << xmlReader.name().toString();
-//                QTreeWidgetItem* item =  QTreeWidgetItem(sl);
-
-//            }
-//            xmlReader.readNext();
-
-//        }
-//        file.close();
-//    }
-
-//    XML xml;
-//    if(file.open(QIODevice::ReadOnly))
-//    {
-//            qDebug() << "XML file is open";
-//            if(doc.setContent(&file))
-//            {
-//                QDomElement domElement = doc.documentElement();
-//                xml.traverseNode(domElement);
-//            }
-//            file.close();
-//     }
-//    else
-//        qDebug() << "Can't open XML file";
-}
-
-
-void MainWindow::writeRecord()
-{
-    // Запись рекордов в XML-файл
-
-//    XML xml;
-//    doc.appendChild(domElement);
-
-//    QDomElement record1 = xml.record(doc, playerName, QString::number(game.points), QDate::currentDate().toString());
-
-//    domElement.appendChild(record1);
-//    if(file.open(QIODevice::WriteOnly))
-//    {
-//           QTextStream(&file) << doc.toString();
-//           file.close();
-//    }
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -101,15 +36,15 @@ void MainWindow::on_pushButton_clicked()
         game.start = true;
         ui->newGameButton->setEnabled(true);
         ui->turnLabel->setEnabled(true);
-        //readRecord();
         if(ui->rb2Players->isChecked())
-            mode = 0;
+            mode = TWO_PLAYERS;
         if(ui->rbComp->isChecked())
         {
-            mode = 1;
+            mode = ONE_PLAYER;
             ui->turnLabel->setText(" ");
         }
     }
+    repaint();
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -118,8 +53,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     QPainter painter(this);
     painter.setPen( Qt::gray );
-    painter.drawLine(QPoint(382,0), QPoint(382, 384));
-    painter.drawImage(QRect (0, 0, 384, 384), back);
+    painter.drawLine(QPoint(FIELD_SIZE,0), QPoint(FIELD_SIZE, FIELD_SIZE));
+    painter.drawImage(QRect (0, 0, FIELD_SIZE, FIELD_SIZE), back);
     for (int i = 0; i < 9; i++)
     {
         painter.drawPixmap(game.coords.at(i), game.all.at(i));
@@ -129,38 +64,40 @@ void MainWindow::paintEvent(QPaintEvent *event)
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     // Если игра начата и кликнуто по полю
-    if(game.start && event->x() <= 384)
+    if(game.start && event->x() <= FIELD_SIZE)
     {
         // Берем координаты нажатой клетки
-        int x = event->pos().x() / 128;
-        int y = event->pos().y() / 128;
+        int x = event->pos().x() / CELL_SIZE;
+        int y = event->pos().y() / CELL_SIZE;
         // Если мы нажали на пустую клетку
-        if(game.grid[x][y] == 0)
+        if(game.grid[x][y] == EMPTY_CELL)
         {
-            // Если 0 - режим 2 игрока, если 1 - игра с компьютером
-            if(mode == 0)
+            //TWO_PLAYERS - режим 2 игрока, ONE_PLAYER - игра с компьютером
+            if(mode == TWO_PLAYERS)
             {
                 // Устанавливаем крестик или нолик в клетку
                 game.grid[x][y] = game.currplayer;
                 //Передаем ход следующему игроку
-                if(game.currplayer == 1)
+                if(game.currplayer == X)
                 {
-                        game.currplayer = 2;
+                        game.currplayer = O;
                         ui->turnLabel->setText(QString("Сейчас ходит: O"));
                 }
                 else
                 {
-                        game.currplayer = 1;
+                        game.currplayer = X;
                         ui->turnLabel->setText(QString("Сейчас ходит: X"));
                 }
             }
-            if (mode == 1)
+            if (mode == ONE_PLAYER)
             {
                 // Устанавливаем крестик в клетку
-                game.grid[x][y] = 1;
+                game.grid[x][y] = X;
+
                 // Устанавливаем нолик в клетку
                 bool check = true;
 
+                // Проверка не заполнено ли поле
                 int count = 0;
                 for(int i = 0; i < 3; i++)
                     for(int j = 0; j < 3; j++)
@@ -168,13 +105,15 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                             count++;
                 if(count == 9) check = false;
 
+                // Случайно выбираем клетку
                 while(check)
                 {
                     int rx = qrand() % 3;
                     int ry = qrand() % 3;
-                    if (game.grid[rx][ry] == 0)
+                    // Если она пуста, ставим в нее нолик.
+                    if (game.grid[rx][ry] == EMPTY_CELL)
                     {
-                        game.grid[rx][ry] = 2;
+                        game.grid[rx][ry] = O;
                         check = false;
                     }
                 }
@@ -188,7 +127,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                     if(game.grid[i][j] != 0)
                     {
                         game.all[i+j+k] = game.player.at(game.grid[i][j]-1);
-                        game.coords[i+j+k] = QRect(i * 132, j * 132, game.picSize, game.picSize);
+                        game.coords[i+j+k] = QRect(i * DISTANCE, j * DISTANCE, game.picSize, game.picSize);
                     }
                 }
                 k = 2;
@@ -308,7 +247,7 @@ void MainWindow::on_lineEdit_returnPressed()
 void MainWindow::on_newGameButton_clicked()
 {
     resetScin();
-    if(mode == 1)
+    if(mode == ONE_PLAYER)
         ui->turnLabel->setText(" ");
     else
         ui->turnLabel->setText(QString("Сейчас ходит: X"));
@@ -324,13 +263,13 @@ void MainWindow::resetScin()
 {
     switch(ui->comboBox->currentIndex())
     {
-        case(0):
-            setScinParam(122, ":/images/images/back.bmp");
-            game.Reset(QPixmap(":/images/images/X.bmp"), QPixmap(":/images/images/O.bmp"));
+        case(DEFAULT_SKIN):
+            setScinParam(DEFAULT_SKIN_SIZE, DEFAULT_BACK);
+            game.Reset(QPixmap(DEFAULT_X_PIC), QPixmap(DEFAULT_O_PIC));
             break;
-        case(1):
-            setScinParam(100, ":/images/images/red/pole.png");
-            game.Reset(QPixmap(":/images/images/red/Kre.png"), QPixmap(":/images/images/red/No.png"));
+        case(RED_SKIN):
+            setScinParam(RED_SKIN_SIZE, RED_BACK);
+            game.Reset(QPixmap(RED_X_PIC), QPixmap(RED_O_PIC));
             break;
         default:
             break;
@@ -338,30 +277,10 @@ void MainWindow::resetScin()
     repaint();
 }
 
-void MainWindow::setScinParam(int size, QString pole)
+void MainWindow::setScinParam(int size, QString background)
 {
-    back.load(pole);
+    back.load(background);
     game.picSize = size;
     game.player.clear();
 }
 
-void MainWindow::setScin(int index)
-{
-    if (game.start)
-    {
-        switch(index)
-        {
-            case(0):
-                setScinParam(122, ":/images/images/back.bmp");
-                game.LoadingImage(QPixmap(":/images/images/X.bmp"), QPixmap(":/images/images/O.bmp"));
-                break;
-            case(1):
-                setScinParam(100, ":/images/images/red/pole.png");
-                game.LoadingImage(QPixmap(":/images/images/red/Kre.png"), QPixmap(":/images/images/red/No.png"));
-                break;
-            default:
-                break;
-        }
-    }
-    repaint();
-}

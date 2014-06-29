@@ -12,6 +12,9 @@
 #include <QXmlStreamReader>
 #include <stdlib.h>
 
+#define TWO_PLAYERS 0   // Режим 2 игрока
+#define ONE_PLAYER 1    // Режим игры одного игрока с компьютером
+
 namespace Ui {
 class MainWindow;
 }
@@ -28,9 +31,7 @@ private:
     Ui::MainWindow *ui;
     QImage back;            // Задний фон
     QString playerName;     // Имя игрока
-    int mode;               // 0 - режим 2 игрока, 1 - игра с компьютером
-    void writeRecord();
-    void readRecord();
+    int mode;               // Режим игры
 
     void resetScin();
     void setScinParam(int size, QString back);
@@ -46,7 +47,6 @@ private slots:
     void on_lineEdit_returnPressed();
     void on_newGameButton_clicked();
     void on_aboutButton_clicked();
-    void setScin(int index);
 };
 
 #endif // MAINWINDOW_H

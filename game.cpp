@@ -1,7 +1,10 @@
 #include "game.h"
 
-Game::Game() {
-    picSize = 122;
+Game::Game()
+{
+    picSize = DEFAULT_SKIN_SIZE;
+    Xwins = 0, Owins = 0;
+    start = false;
 }
 
 void Game::LoadingImage(QPixmap x, QPixmap o)
@@ -17,15 +20,15 @@ void Game::LoadingImage(QPixmap x, QPixmap o)
     for (int i = 0; i < 9; i++)
         all.append(QPixmap());
 
-    coords.append(QRect(0 * 132, 0 * 132, picSize, picSize));
-    coords.append(QRect(1 * 132, 0 * 132, picSize, picSize));
-    coords.append(QRect(2 * 132, 0 * 132, picSize, picSize));
-    coords.append(QRect(0 * 132, 1 * 132, picSize, picSize));
-    coords.append(QRect(1 * 132, 1 * 132, picSize, picSize));
-    coords.append(QRect(2 * 132, 1 * 132, picSize, picSize));
-    coords.append(QRect(0 * 132, 2 * 132, picSize, picSize));
-    coords.append(QRect(1 * 132, 2 * 132, picSize, picSize));
-    coords.append(QRect(2 * 132, 2 * 132, picSize, picSize));
+    coords.append(QRect(0 * DISTANCE, 0 * DISTANCE, picSize, picSize));
+    coords.append(QRect(1 * DISTANCE, 0 * DISTANCE, picSize, picSize));
+    coords.append(QRect(2 * DISTANCE, 0 * DISTANCE, picSize, picSize));
+    coords.append(QRect(0 * DISTANCE, 1 * DISTANCE, picSize, picSize));
+    coords.append(QRect(1 * DISTANCE, 1 * DISTANCE, picSize, picSize));
+    coords.append(QRect(2 * DISTANCE, 1 * DISTANCE, picSize, picSize));
+    coords.append(QRect(0 * DISTANCE, 2 * DISTANCE, picSize, picSize));
+    coords.append(QRect(1 * DISTANCE, 2 * DISTANCE, picSize, picSize));
+    coords.append(QRect(2 * DISTANCE, 2 * DISTANCE, picSize, picSize));
 }
 
 void Game::Reset(QPixmap x, QPixmap o)
@@ -39,7 +42,7 @@ void Game::Reset(QPixmap x, QPixmap o)
     all.clear();
     coords.clear();
     player.clear();
-    currplayer = 1;
+    currplayer = X;
     LoadingImage(x, o);
 }
 
