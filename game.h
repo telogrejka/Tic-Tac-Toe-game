@@ -12,6 +12,7 @@ public:
     void LoadingImage(QPixmap x, QPixmap o);
     void Reset(QPixmap x, QPixmap o);
     int GameOver();
+    // review notes: А почему вы используете QList? Чем он лучше std::list?
     QList<QPixmap> all;
     QList<QPixmap> player;
     QList<QRect> coords;
