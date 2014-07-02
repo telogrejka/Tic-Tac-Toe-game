@@ -2,18 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QFile>
 #include <QDebug>
-#include <QMessageBox>
-#include <QTextStream>
 #include <QPainter>
 #include <QMouseEvent>
-#include <QPixmap>
-#include <QXmlStreamReader>
+#include <QMessageBox>
+#include <QTextStream>
 #include <stdlib.h>
-
-#define TWO_PLAYERS 0   // Режим 2 игрока
-#define ONE_PLAYER 1    // Режим игры одного игрока с компьютером
 
 namespace Ui {
 class MainWindow;
@@ -31,6 +25,7 @@ private:
     Ui::MainWindow *ui;
     QImage back;            // Задний фон
     QString playerName;     // Имя игрока
+    QString secondPlayerName;     // Имя второго игрока
     int mode;               // Режим игры
 
     void resetScin();
@@ -47,6 +42,8 @@ private slots:
     void on_lineEdit_returnPressed();
     void on_newGameButton_clicked();
     void on_aboutButton_clicked();
+    void on_rbComp_clicked();
+    void on_rb2Players_clicked();
 };
 
 #endif // MAINWINDOW_H

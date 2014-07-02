@@ -10,9 +10,11 @@ Game game;
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    game.Reset(QPixmap(DEFAULT_X_PIC), QPixmap(DEFAULT_O_PIC));
     ui->comboBox->addItem("Default");
     ui->comboBox->addItem("Red");
+    ui->lineEdit_2->hide();
+    ui->player2_Label->hide();
+    ui->groupBox->setGeometry(QRect(20, 120, 341, 86));
 }
 
 MainWindow::~MainWindow()
@@ -27,6 +29,11 @@ void MainWindow::on_pushButton_clicked()
         QMessageBox::warning(this, "Ошибка", "Введите имя игрока", QMessageBox::Ok);
         ui->lineEdit->setFocus();
     }
+    if(ui->rb2Players->isChecked() && (ui->lineEdit_2->text().isEmpty() || ui->lineEdit_2->text() == " "))
+    {
+        QMessageBox::warning(this, "Ошибка", "Введите имя второго игрока", QMessageBox::Ok);
+        ui->lineEdit_2->setFocus();
+    }
     else
     {
         playerName.append(ui->lineEdit->text());
@@ -37,7 +44,9 @@ void MainWindow::on_pushButton_clicked()
         ui->newGameButton->setEnabled(true);
         ui->turnLabel->setEnabled(true);
         if(ui->rb2Players->isChecked())
+        {
             mode = TWO_PLAYERS;
+        }
         if(ui->rbComp->isChecked())
         {
             mode = ONE_PLAYER;
@@ -53,22 +62,25 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     QPainter painter(this);
     painter.setPen( Qt::gray );
-    painter.drawLine(QPoint(FIELD_SIZE,0), QPoint(FIELD_SIZE, FIELD_SIZE));
+    painter.drawLine(QPoint(FIELD_SIZE, 0), QPoint(FIELD_SIZE, FIELD_SIZE));
     painter.drawImage(QRect (0, 0, FIELD_SIZE, FIELD_SIZE), back);
-    for (int i = 0; i < 9; i++)
-    {
-        painter.drawPixmap(game.coords.at(i), game.all.at(i));
-    }
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            painter.drawImage(game.coords[i][j], game.all[i][j]);
+    game.pen.setWidth(4);
+    game.pen.setBrush(Qt::red);
+    painter.setPen(game.pen);
+    painter.drawLine(game.from, game.to);
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    // Если игра начата и кликнуто по полю
-    if(game.start && event->x() <= FIELD_SIZE)
+    // Если игра начата и ЛКМ по полю
+    if(event->button() == Qt::LeftButton && game.start && event->x() <= FIELD_SIZE)
     {
         // Берем координаты нажатой клетки
-        int x = event->pos().x() / CELL_SIZE;
-        int y = event->pos().y() / CELL_SIZE;
+        int x = event->x() / CELL_SIZE;
+        int y = event->y() / CELL_SIZE;
         // Если мы нажали на пустую клетку
         if(game.grid[x][y] == EMPTY_CELL)
         {
@@ -119,19 +131,16 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 }
             }
             // Рисуем крестики и нолики
-            int k = 0;
             for(int i = 0; i < 3; i++)
             {
                 for(int j = 0; j < 3; j++)
                 {
                     if(game.grid[i][j] != 0)
                     {
-                        game.all[i+j+k] = game.player.at(game.grid[i][j]-1);
-                        game.coords[i+j+k] = QRect(i * DISTANCE, j * DISTANCE, game.picSize, game.picSize);
+                        game.all[i][j] = game.player[game.grid[i][j]-1];
+                        game.coords[i][j] = QRect(i * DISTANCE, j * DISTANCE, game.picSize, game.picSize);
                     }
                 }
-                k = 2;
-                if (i == 1) k += 2;
             }
             //Перерисовываем поле
             repaint();
@@ -216,7 +225,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
                 finded = true;
                 QString oldRec = txtRecords.readLine();
                 oldRecord = oldRec.toInt();
-                qDebug() << "oldRecord: " << oldRecord << "currentPoints: " << game.points;
                 // Если установлен новый рекорд, заменяем им старый
                 if(oldRecord < game.points)
                 {                
@@ -259,17 +267,18 @@ void MainWindow::on_aboutButton_clicked()
 {
     QMessageBox::about(this, "О программе", "Игра крестики-нолики\nРазработчик Мельников Роман");
 }
+
 void MainWindow::resetScin()
 {
     switch(ui->comboBox->currentIndex())
     {
         case(DEFAULT_SKIN):
             setScinParam(DEFAULT_SKIN_SIZE, DEFAULT_BACK);
-            game.Reset(QPixmap(DEFAULT_X_PIC), QPixmap(DEFAULT_O_PIC));
+            game.Reset(QImage(DEFAULT_X_PIC), QImage(DEFAULT_O_PIC));
             break;
         case(RED_SKIN):
             setScinParam(RED_SKIN_SIZE, RED_BACK);
-            game.Reset(QPixmap(RED_X_PIC), QPixmap(RED_O_PIC));
+            game.Reset(QImage(RED_X_PIC), QImage(RED_O_PIC));
             break;
         default:
             break;
@@ -281,6 +290,21 @@ void MainWindow::setScinParam(int size, QString background)
 {
     back.load(background);
     game.picSize = size;
-    game.player.clear();
 }
 
+
+void MainWindow::on_rbComp_clicked()
+{
+    ui->label->setText("Ваше имя");
+    ui->lineEdit_2->hide();
+    ui->player2_Label->hide();
+    ui->groupBox->setGeometry(QRect(20, 120, 341, 86));
+}
+
+void MainWindow::on_rb2Players_clicked()
+{
+    ui->lineEdit_2->show();
+    ui->player2_Label->show();
+    ui->label->setText("Игрок 1");
+    ui->groupBox->setGeometry(QRect(20, 120, 341, 120));
+}

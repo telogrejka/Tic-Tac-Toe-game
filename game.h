@@ -1,9 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <QList>
-#include <QPixmap>
-#include <QMessageBox>
+#include <QPen>
+#include <QImage>
+#include <QPoint>
 
 #define FIELD_SIZE 384          // Размер игрового поля
 #define CELL_SIZE 128           // Размер клетки на игровом поле
@@ -15,6 +15,8 @@
 #define EMPTY_CELL 0            // Пустая клетка
 #define X 1                     // Крестик
 #define O 2                     // Нолик
+#define TWO_PLAYERS 0           // Режим 2 игрока
+#define ONE_PLAYER 1            // Режим игры одного игрока с компьютером
 // Изображения
 #define DEFAULT_BACK ":/images/images/back.bmp"
 #define DEFAULT_X_PIC ":/images/images/X.bmp"
@@ -27,18 +29,21 @@ class Game
 {
 public:
     Game();
-    void LoadingImage(QPixmap x, QPixmap o);
-    void Reset(QPixmap x, QPixmap o);
+    void LoadingImage(QImage x, QImage o);
+    void Reset(QImage x, QImage o);
     int GameOver();
-    QList<QPixmap> all;
-    QList<QPixmap> player;
-    QList<QRect> coords;
+    QImage all[3][3];
+    QImage player[2];
+    QRect coords[3][3];
+    QPen pen;
+    QPoint from, to;    // Вектор "зачеркивающей" линии
     bool start;         // true - игра начата; false - игра еще не начата
     int grid[3][3];     // Массив обозначающий поле
     int currplayer;     // 1 - ходит крестик; 2 - ходит нолик
     int Xwins, Owins;   // Количество побед игроков
     double points;      // Очки игроков
     int picSize;        // Размер изображения крестика и нолика
+    const int finDist = CELL_SIZE / 2;  // Константа для "зачеркивающей" линии
 };
 
 #endif // GAME_H
